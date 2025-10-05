@@ -5,6 +5,10 @@ import GuessPhase from "./GuessPhase";
 import useSpyGameLogic from "./useSpyGameLogic";
 import { Toaster } from "react-hot-toast";
 
+// 🌀 اضافه کردن لودر
+import { Grid } from "ldrs/react";
+import "ldrs/react/Grid.css";
+
 function SpyGame() {
   const {
     allWords,
@@ -23,7 +27,25 @@ function SpyGame() {
     handleGuessSpy,
   } = useSpyGameLogic();
 
-  if (isLoading) return <p>در حال بارگذاری...</p>;
+  // 🌀 در حال بارگذاری
+  if (isLoading)
+    return (
+      <div
+        style={{
+          backgroundColor: "#313131",
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          color: "white",
+          fontFamily: "Vazirmatn, sans-serif",
+        }}
+      >
+        <Grid size="70" speed="1.5" color="#CA3E47" />
+        <p style={{ marginTop: "1rem", fontSize: "18px" }}>در حال بارگذاری...</p>
+      </div>
+    );
 
   return (
     <div
@@ -66,7 +88,10 @@ function SpyGame() {
           totalPlayers={gameState.players.length}
         />
       ) : (
-        <GuessPhase players={gameState.players} handleGuessSpy={handleGuessSpy} />
+        <GuessPhase
+          players={gameState.players}
+          handleGuessSpy={handleGuessSpy}
+        />
       )}
     </div>
   );
