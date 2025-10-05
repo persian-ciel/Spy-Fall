@@ -47,6 +47,7 @@ This launches the development server with HMR at http://localhost:3000 (default)
 
 ## Preview
 
+Visit the site in http://spy-fall-chi.vercel.app
 ---
 
 ## Contact / Author
