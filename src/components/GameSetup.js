@@ -8,7 +8,9 @@ function GameSetup({
 }) {
   return (
     <div style={{ display: "inline-grid" }}>
-      <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "2.5rem" }}>
+      <h1
+        style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "2.5rem" }}
+      >
         تنظیمات بازی جاسوس
       </h1>
 
@@ -20,9 +22,10 @@ function GameSetup({
             value={numPlayers}
             min="3"
             max="12"
-            onChange={(e) =>
-              setNumPlayers(Math.max(3, parseInt(e.target.value) || 3))
-            }
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 3;
+              setNumPlayers(Math.min(12, Math.max(3, value)));
+            }}
             style={{ marginLeft: "10px", padding: "5px" }}
           />
         </label>
@@ -36,19 +39,16 @@ function GameSetup({
             value={numSpies}
             min="1"
             max={numPlayers - 1}
-            onChange={(e) =>
-              setNumSpies(Math.max(1, parseInt(e.target.value) || 1))
-            }
+            onChange={(e) => {
+              const value = parseInt(e.target.value) || 1;
+              setNumSpies(Math.min(numPlayers - 1, Math.max(1, value)));
+            }}
             style={{ marginLeft: "10px", padding: "5px" }}
           />
         </label>
       </div>
 
-      <button
-        onClick={startGame}
-        disabled={disabled}
-        style={buttonStyle}
-      >
+      <button onClick={startGame} disabled={disabled} style={buttonStyle}>
         شروع بازی
       </button>
     </div>

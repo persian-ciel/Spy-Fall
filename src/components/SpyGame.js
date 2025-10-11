@@ -1,11 +1,8 @@
-// src/components/SpyGame/SpyGame.jsx
 import GameSetup from "./GameSetup";
 import RoleReveal from "./RoleReveal";
 import GuessPhase from "./GuessPhase";
 import useSpyGameLogic from "./useSpyGameLogic";
 import { Toaster } from "react-hot-toast";
-
-// 🌀 اضافه کردن لودر
 import { Grid } from "ldrs/react";
 import "ldrs/react/Grid.css";
 
@@ -27,7 +24,6 @@ function SpyGame() {
     handleGuessSpy,
   } = useSpyGameLogic();
 
-  // 🌀 در حال بارگذاری
   if (isLoading)
     return (
       <div
@@ -43,7 +39,9 @@ function SpyGame() {
         }}
       >
         <Grid size="70" speed="1.5" color="#CA3E47" />
-        <p style={{ marginTop: "1rem", fontSize: "18px" }}>در حال بارگذاری...</p>
+        <p style={{ marginTop: "1rem", fontSize: "18px" }}>
+          در حال بارگذاری...
+        </p>
       </div>
     );
 
@@ -57,14 +55,32 @@ function SpyGame() {
         height: "100vh",
       }}
     >
-      {/* 🔔 Toast container */}
       <Toaster
-        position="top-center"
+        position="bottom-center"
+        reverseOrder={false}
+        gutter={8} // فاصله بین toastها
+        containerStyle={{ zIndex: 9999 }}
         toastOptions={{
+          duration: 3000, // هر toast ۳ ثانیه نمایش داده شود
           style: {
-            background: "#333",
-            color: "#fff",
             fontFamily: "Vazirmatn, sans-serif",
+            fontWeight: "bold",
+            borderRadius: "12px",
+            padding: "12px 20px",
+            fontSize: "16px",
+            color: "#fff",
+            boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
+            background: "#333",
+            transition: "all 0.3s ease",
+          },
+          success: {
+            style: { background: "#4caf50" }, // سبز برای موفقیت
+          },
+          error: {
+            style: { background: "#f44336" }, // قرمز برای خطا
+          },
+          loading: {
+            style: { background: "#2196f3" }, // آبی برای اطلاع‌رسانی
           },
         }}
       />

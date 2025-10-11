@@ -1,4 +1,3 @@
-// src/components/SpyGame/useSpyGameLogic.js
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -12,8 +11,16 @@ export default function useSpyGameLogic() {
   const [numSpies, setNumSpies] = useState(1);
   const [roleViewed, setRoleViewed] = useState(false);
 
-  // Load JSON data
   useEffect(() => {
+    let loaded = false;
+    let timerDone = false;
+
+    const LOADING_DELAY = 2000;
+    const timer = setTimeout(() => {
+      timerDone = true;
+      if (loaded) setIsLoading(false);
+    }, LOADING_DELAY);
+
     fetch("/data/Words.json")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load JSON");
@@ -21,23 +28,29 @@ export default function useSpyGameLogic() {
       })
       .then((data) => {
         setAllWords(data);
-        setIsLoading(false);
+        loaded = true;
+        if (timerDone) setIsLoading(false);
       })
       .catch((err) => {
         console.error(err);
+        toast.dismiss();
         toast.error("❌ خطا در بارگذاری داده‌ها!");
+        setIsLoading(false);
       });
+
+    return () => clearTimeout(timer);
   }, []);
 
-  // Start new game
   const startGame = () => {
-    if (!allWords || !allWords.locations.length) return;
+    if (!allWords || !allWords.locations?.length) return;
 
     if (numPlayers < 3) {
+      toast.dismiss();
       toast.error("حداقل ۳ بازیکن لازم است!");
       return;
     }
     if (numSpies >= numPlayers) {
+      toast.dismiss();
       toast.error("تعداد جاسوس‌ها باید کمتر از تعداد بازیکنان باشد!");
       return;
     }
@@ -57,6 +70,7 @@ export default function useSpyGameLogic() {
         id: i,
         role: spyIndices.includes(i) ? "جاسوس" : randomLocation,
         revealed: false,
+        guessed: false, // ← اضافه شد
       }));
 
     setGameState({ location: randomLocation, players, spyIndices });
@@ -64,10 +78,10 @@ export default function useSpyGameLogic() {
     setRoleViewed(false);
     setGameStarted(true);
 
+    toast.dismiss();
     toast.success("🎲 بازی شروع شد!");
   };
 
-  // Confirm viewing role
   const confirmRole = () => {
     const updatedPlayers = [...gameState.players];
     updatedPlayers[currentPlayerIndex].revealed = true;
@@ -76,28 +90,48 @@ export default function useSpyGameLogic() {
     if (currentPlayerIndex < updatedPlayers.length - 1) {
       setCurrentPlayerIndex(currentPlayerIndex + 1);
       setRoleViewed(false);
+      toast.dismiss();
       toast("👤 نوبت بازیکن بعدی!");
     } else {
       setCurrentPlayerIndex(null);
       setRoleViewed(false);
+      toast.dismiss();
       toast.success("✅ همه بازیکنان نقش خود را دیدند!");
     }
   };
 
-  // Spy guessing logic
   const handleGuessSpy = (playerId) => {
-    const isCorrect = gameState.spyIndices.includes(playerId);
+    const updatedPlayers = [...gameState.players];
+    const player = updatedPlayers[playerId];
 
-    if (isCorrect) {
-      toast.success("🎉 تبریک! شما یک جاسوس را درست حدس زدید!");
-    } else {
-      toast.error(
-        `😈 اشتباه کردید! جاسوس‌ها بازیکنان شماره ${gameState.spyIndices
-          .map((i) => i + 1)
-          .join(", ")} بودند.`
-      );
+    // حذف همه toastهای قبلی قبل از نمایش جدید
+    toast.dismiss();
+
+    if (player.role !== "جاسوس") {
+      toast.error("😈 اشتباه! این بازیکن جاسوس نیست.");
+      return;
     }
-    setGameStarted(false);
+
+    if (player.guessed) {
+      toast("⚠️ این جاسوس قبلاً حدس زده شده است!");
+      return;
+    }
+
+    // علامت‌گذاری جاسوس حدس زده شده
+    player.guessed = true;
+    setGameState({ ...gameState, players: updatedPlayers });
+
+    toast.success(`🎉 جاسوس شماره ${playerId + 1} حدس زده شد!`);
+
+    // بررسی اینکه آیا تمام جاسوس‌ها حدس زده شدند
+    const allSpiesGuessed = updatedPlayers
+      .filter((p) => p.role === "جاسوس")
+      .every((p) => p.guessed);
+
+    if (allSpiesGuessed) {
+      toast.success("✅ همه جاسوس‌ها حدس زده شدند! بازی تمام شد.");
+      setGameStarted(false);
+    }
   };
 
   return {
