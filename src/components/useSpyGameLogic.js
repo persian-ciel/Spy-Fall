@@ -1,3 +1,4 @@
+// src/components/SpyGame/useSpyGameLogic.js
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 
@@ -10,12 +11,15 @@ export default function useSpyGameLogic() {
   const [numPlayers, setNumPlayers] = useState(4);
   const [numSpies, setNumSpies] = useState(1);
   const [roleViewed, setRoleViewed] = useState(false);
+  const [usedLocations, setUsedLocations] = useState([]);
+  const [wrongGuesses, setWrongGuesses] = useState(0);
+  const MAX_WRONG_GUESSES = 3;
 
   useEffect(() => {
     let loaded = false;
     let timerDone = false;
-
     const LOADING_DELAY = 2000;
+
     const timer = setTimeout(() => {
       timerDone = true;
       if (loaded) setIsLoading(false);
@@ -55,8 +59,22 @@ export default function useSpyGameLogic() {
       return;
     }
 
-    const randomLocation =
-      allWords.locations[Math.floor(Math.random() * allWords.locations.length)];
+    const availableLocations = allWords.locations.filter(
+      (loc) => !usedLocations.includes(loc)
+    );
+
+    let chosenLocation;
+    if (availableLocations.length === 0) {
+      setUsedLocations([]);
+      chosenLocation =
+        allWords.locations[
+          Math.floor(Math.random() * allWords.locations.length)
+        ];
+    } else {
+      chosenLocation =
+        availableLocations[Math.floor(Math.random() * availableLocations.length)];
+      setUsedLocations([...usedLocations, chosenLocation]);
+    }
 
     const spyIndices = [];
     while (spyIndices.length < numSpies) {
@@ -68,15 +86,16 @@ export default function useSpyGameLogic() {
       .fill(null)
       .map((_, i) => ({
         id: i,
-        role: spyIndices.includes(i) ? "جاسوس" : randomLocation,
+        role: spyIndices.includes(i) ? "جاسوس" : chosenLocation,
         revealed: false,
-        guessed: false, // ← اضافه شد
+        guessed: false,
       }));
 
-    setGameState({ location: randomLocation, players, spyIndices });
+    setGameState({ location: chosenLocation, players, spyIndices });
     setCurrentPlayerIndex(0);
     setRoleViewed(false);
     setGameStarted(true);
+    setWrongGuesses(0);
 
     toast.dismiss();
     toast.success("🎲 بازی شروع شد!");
@@ -101,14 +120,27 @@ export default function useSpyGameLogic() {
   };
 
   const handleGuessSpy = (playerId) => {
+    if (!gameState) return;
+
     const updatedPlayers = [...gameState.players];
     const player = updatedPlayers[playerId];
 
-    // حذف همه toastهای قبلی قبل از نمایش جدید
     toast.dismiss();
 
     if (player.role !== "جاسوس") {
       toast.error("😈 اشتباه! این بازیکن جاسوس نیست.");
+      const newWrongGuesses = wrongGuesses + 1;
+      setWrongGuesses(newWrongGuesses);
+
+      if (newWrongGuesses >= MAX_WRONG_GUESSES) {
+        toast.error("💀 جاسوس برنده شد! بازیکنان نتوانستند جاسوس را پیدا کنند.");
+        setGameStarted(false);
+
+        const spies = updatedPlayers
+          .filter((p) => p.role === "جاسوس")
+          .map((p) => `بازیکن شماره ${p.id + 1}`);
+        toast.success(`🕵️‍♂️ جاسوس‌ها: ${spies.join(", ")}`);
+      }
       return;
     }
 
@@ -117,20 +149,20 @@ export default function useSpyGameLogic() {
       return;
     }
 
-    // علامت‌گذاری جاسوس حدس زده شده
     player.guessed = true;
     setGameState({ ...gameState, players: updatedPlayers });
-
     toast.success(`🎉 جاسوس شماره ${playerId + 1} حدس زده شد!`);
 
-    // بررسی اینکه آیا تمام جاسوس‌ها حدس زده شدند
     const allSpiesGuessed = updatedPlayers
       .filter((p) => p.role === "جاسوس")
       .every((p) => p.guessed);
 
     if (allSpiesGuessed) {
-      toast.success("✅ همه جاسوس‌ها حدس زده شدند! بازی تمام شد.");
+      toast.success("✅ همه جاسوس‌ها حدس زده شدند! بازیکنان برنده شدند.");
       setGameStarted(false);
+
+      // فقط اینجا کلمه اصلی رو نشون میده
+      toast.success(`📌 کلمه اصلی: "${gameState.location}"`);
     }
   };
 

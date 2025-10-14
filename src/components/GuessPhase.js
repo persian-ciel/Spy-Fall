@@ -25,6 +25,8 @@ const buttonStyle = {
   backgroundColor: "#CA3E47",
   borderRadius: "25px",
   fontWeight: "bold",
+  cursor: "pointer",
+
 };
 
 export default GuessPhase;

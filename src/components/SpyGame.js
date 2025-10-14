@@ -28,7 +28,9 @@ function SpyGame() {
     return (
       <div
         style={{
-          backgroundColor: "#313131",
+          background: "#570303",
+          background:
+            "linear-gradient(0deg,rgba(87, 3, 3, 1) 0%, rgba(36, 36, 36, 1) 71%)",
           height: "100vh",
           display: "flex",
           alignItems: "center",
@@ -38,9 +40,9 @@ function SpyGame() {
           fontFamily: "Vazirmatn, sans-serif",
         }}
       >
-        <Grid size="70" speed="1.5" color="#CA3E47" />
+        <Grid size="70" speed="1.5" color="#ffffff" />
         <p style={{ marginTop: "1rem", fontSize: "18px" }}>
-          در حال بارگذاری...
+          ... در حال بارگذاری
         </p>
       </div>
     );
@@ -50,7 +52,9 @@ function SpyGame() {
       style={{
         textAlign: "center",
         padding: "20px",
-        backgroundColor: "#313131",
+        background: "#570303",
+        background:
+          "linear-gradient(0deg,rgba(87, 3, 3, 1) 0%, rgba(36, 36, 36, 1) 71%)",
         color: "white",
         height: "100vh",
       }}
